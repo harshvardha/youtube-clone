@@ -35,7 +35,6 @@ const signin = async (req, res, next) => {
             id: user[0]._id
         }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "20m" });
         const { password, ...others } = user[0]._doc;
-        console.log("others: ", password);
         res.cookie("access_token", accessToken, {
             httpOnly: true
         }).status(StatusCodes.OK).json(others);
@@ -47,7 +46,27 @@ const signin = async (req, res, next) => {
 
 const googleSignIn = async (req, res, next) => {
     try {
-
+        const user = await User.findOne({ email: req.body.email });
+        if (user) {
+            const accessToken = jsonwebtoken.sign({
+                id: user._id
+            }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "20m" });
+            res.cookie("access_token", accessToken, {
+                httpOnly: true
+            }).status(StatusCodes.OK).json(user._doc);
+        }
+        else {
+            const newUser = await User.create({
+                ...req.body,
+                fromGoogle: true
+            });
+            const accessToken = jsonwebtoken.sign({
+                id: newUser._id
+            }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "20m" });
+            res.cookie("access_token", accessToken, {
+                httpOnly: true
+            }).status(StatusCodes.CREATED).json(newUser._doc);
+        }
     } catch (error) {
         console.log(error);
         next(createError(StatusCodes.INTERNAL_SERVER_ERROR, "Server error, We are fixing it."));

@@ -12,8 +12,7 @@ const userSchema = new Schema({
         unique: true
     },
     password: {
-        type: String,
-        required: true
+        type: String
     },
     image: {
         type: String
@@ -24,6 +23,10 @@ const userSchema = new Schema({
     },
     subscribedUsers: {
         type: [String]
+    },
+    fromGoogle: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true })
 

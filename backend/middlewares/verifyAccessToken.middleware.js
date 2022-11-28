@@ -6,9 +6,9 @@ dotenv.config();
 
 const verifyToken = async (req, res, next) => {
     try {
-        console.log(req.cookies);
+        console.log("cookies: ", req.cookies);
         const token = req.cookies.access_token;
-        console.log(token);
+        console.log("token: ", token);
         if (!token) {
             return next(createError(StatusCodes.UNAUTHORIZED, "You are not authorized!"));
         }
@@ -25,7 +25,7 @@ const verifyToken = async (req, res, next) => {
         )
     } catch (error) {
         console.log(error);
-        next(createError(StatusCodes.INTENAL_SERVER_ERROR, "Server error, we are fixing it."))
+        next(createError(StatusCodes.INTERNAL_SERVER_ERROR, "Server error, we are fixing it."))
     }
 }
 
