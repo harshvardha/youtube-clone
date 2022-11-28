@@ -17,6 +17,7 @@ import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined"
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Container = styled.div`
     flex: 1;
@@ -93,6 +94,8 @@ const Title = styled.h2`
 `
 
 const Menu = ({ darkMode, setDarkMode }) => {
+    const { currentUser } = useSelector(state => state.user);
+
     return (
         <Container>
             <Wrapper>
@@ -102,18 +105,24 @@ const Menu = ({ darkMode, setDarkMode }) => {
                         YouTube
                     </Logo>
                 </Link>
-                <Item>
-                    <HomeIcon />
-                    Home
-                </Item>
-                <Item>
-                    <ExploreOutlinedIcon />
-                    Explore
-                </Item>
-                <Item>
-                    <SubscriptionsOutlinedIcon />
-                    Subscriptions
-                </Item>
+                <Link to={"/"} style={{ textDecoration: "none", color: darkMode ? "white" : "black" }}>
+                    <Item>
+                        <HomeIcon />
+                        Home
+                    </Item>
+                </Link>
+                <Link to={"/trendingVideos"} style={{ textDecoration: "none", color: darkMode ? "white" : "black" }}>
+                    <Item>
+                        <ExploreOutlinedIcon />
+                        Explore
+                    </Item>
+                </Link>
+                <Link to={"/subscriptions"} style={{ textDecoration: "none", color: darkMode ? "white" : "black" }}>
+                    <Item>
+                        <SubscriptionsOutlinedIcon />
+                        Subscriptions
+                    </Item>
+                </Link>
                 <Hr />
                 <Item>
                     <VideoLibraryOutlinedIcon />
@@ -124,13 +133,17 @@ const Menu = ({ darkMode, setDarkMode }) => {
                     History
                 </Item>
                 <Hr />
-                <Login>
-                    <P>Sign in to like videos, comment, and subscribe</P>
-                    <Link to={"/signin"} style={{ textDecoration: "none" }}>
-                        <Button><AccountCircleOutlinedIcon /> SIGN IN</Button>
-                    </Link>
-                </Login>
-                <Hr />
+                {!currentUser &&
+                    <>
+                        <Login>
+                            <P>Sign in to like videos, comment, and subscribe</P>
+                            <Link to={"/signin"} style={{ textDecoration: "none" }}>
+                                <Button><AccountCircleOutlinedIcon /> SIGN IN</Button>
+                            </Link>
+                        </Login>
+                        <Hr />
+                    </>
+                }
                 <Title>BEST OF YOUTUBE</Title>
                 <Item>
                     <LibraryMusicOutlinedIcon />

@@ -1,4 +1,10 @@
 import styled from "styled-components";
+import { useState } from "react";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { loginFailure, loginStart, loginSuccess } from "../redux/userSlice";
+import { auth, provider } from "../firebase";
+import { signInWithPopup } from "firebase/auth";
 
 const Container = styled.div`
     display: flex;
@@ -67,19 +73,57 @@ const Link = styled.span`
 `;
 
 const SignIn = () => {
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const dispatch = useDispatch();
+
+    const handleLogin = async (event) => {
+        event.preventDefault();
+        dispatch(loginStart());
+        try {
+            const res = await axios.post("http://localhost:5000/authentication/signin", { name, password })
+            console.log(res);
+            dispatch(loginSuccess(res.data));
+            console.log(res.data);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const signInWithGoogle = async () => {
+        dispatch(loginStart());
+        signInWithPopup(auth, provider)
+            .then(result => {
+                axios.post("http://localhost:5000/authentication/google", {
+                    name: result.user.displayName,
+                    email: result.user.email,
+                    image: result.user.photoURL
+                }).then(res => {
+                    dispatch(loginSuccess(res.data));
+                })
+            })
+            .catch(error => {
+                console.log(error);
+                dispatch(loginFailure());
+            })
+    }
+
     return (
         <Container>
             <Wrapper>
                 <Title>Sign in</Title>
                 <SubTitle>to continue to YouTube</SubTitle>
-                <Input placeholder="username" />
-                <Input type="password" placeholder="password" />
-                <Button>Sign in</Button>
+                <Input placeholder="username" onChange={(event) => setName(event.target.value)} />
+                <Input type="password" placeholder="password" onChange={(event) => setPassword(event.target.value)} />
+                <Button onClick={handleLogin}>Sign in</Button>
                 <Title>or</Title>
-                <Input placeholder="username" />
-                <Input type="email" placeholder="email" />
-                <Input type="password" placeholder="password" />
-                <Button>Sign up</Button>
+                <Button onClick={signInWithGoogle}>Signin with Google</Button>
+                <Title>or</Title>
+                <Input placeholder="username" onChange={(event) => setName(event.target.value)} />
+                <Input type="email" placeholder="email" onChange={(event) => setEmail(event.target.value)} />
+                <Input type="password" placeholder="password" onChange={(event) => setPassword(event.target.value)} />
+                <Button onClick={handleLogin}>Sign up</Button>
             </Wrapper>
             <More>
                 English(IND)

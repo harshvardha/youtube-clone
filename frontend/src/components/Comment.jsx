@@ -1,4 +1,7 @@
+import axios from "axios";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
+import { format } from "timeago.js";
 
 const Container = styled.div`
     display: flex;
@@ -36,18 +39,26 @@ const Text = styled.span`
     color: ${({ theme }) => theme.text};
 `;
 
-const Comment = () => {
+const Comment = ({ comment }) => {
+    const [channel, setChannel] = useState({});
+
+    useEffect(() => {
+        const fetchComment = async () => {
+            const res = await axios.get(`http://localhost:5000/users/find/${comment.userId}`);
+            setChannel(res.data);
+        }
+        fetchComment();
+    }, [])
+
     return (
         <Container>
-            <Avatar src="https://yt3.ggpht.com/ytc/AMLnZu80jIF6oehgpUILTaUbqSM5xYHWbPoc_Bz7wddxzg=s68-c-k-c0x00ffffff-no-rj" />
+            <Avatar src={channel.image} />
             <Details>
                 <Name>
-                    Harshvardhan Singh Chauhan<Date>24/11/2022</Date>
+                    {channel.name}<Date>{format(comment.createdAt)}</Date>
                 </Name>
                 <Text>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Repellat, libero perspiciatis quia natus,
-                    consectetur rem ipsam molestiae fugiat exercitationem vel nihil, perferendis nobis aut optio quidem
-                    quis animi culpa. Similique.
+                    {comment.description}
                 </Text>
             </Details>
         </Container>

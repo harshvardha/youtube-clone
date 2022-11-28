@@ -1,7 +1,15 @@
-import { AddTaskOutlined, ReplyOutlined, ThumbDownOffAltOutlined, ThumbUpOutlined } from "@mui/icons-material";
+import { AddTaskOutlined, ReplyOutlined, ThumbDown, ThumbDownOffAltOutlined, ThumbUp, ThumbUpOutlined } from "@mui/icons-material";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import Card from "../components/Card";
 import Comments from "../components/Comments";
+import { dislike, fetchSuccess, like } from "../redux/videoSlice";
+import { format } from "timeago.js";
+import { subscription } from "../redux/userSlice";
+import Recommendation from "../components/Recommendation";
 
 const Container = styled.div`
     display: flex;
@@ -55,10 +63,6 @@ const Hr = styled.hr`
     border: 0.5px solid ${({ theme }) => theme.soft};
 `;
 
-const Recommendation = styled.div`
-    flex: 2;
-`;
-
 const Channel = styled.div`
     display: flex;
     justify-content: space-between;
@@ -107,27 +111,67 @@ const Subscribe = styled.button`
     cursor: pointer;
 `;
 
+const VideoFrame = styled.video`
+    max-height: 720px;
+    width: 100%;
+    object-fit: cover;
+`;
+
 const Video = () => {
+    const { currentUser } = useSelector(state => state.user);
+    const { currentVideo } = useSelector(state => state.video);
+    const dispatch = useDispatch();
+    const params = useParams();
+    const [video, setVideo] = useState({});
+    const [channel, setChannel] = useState({});
+
+    const handleLike = async () => {
+        await axios.put(`http://localhost:5000/users/like/${currentVideo._id}`);
+        dispatch(like(currentUser._id));
+    }
+
+    const handleDislike = async () => {
+        await axios.put(`http://localhost:5000/users/dislike/${currentVideo._id}`);
+        dispatch(dislike(currentUser._id));
+    }
+
+    const handleSubscribe = async () => {
+        currentUser.subscribedUsers.includes(channel._id) ?
+            await axios.put(`http://localhost:5000/users/unsubscribe/${channel._id}`) :
+            await axios.put(`http://localhost:5000/users/subscribe/${channel._id}`);
+        dispatch(subscription(channel._id));
+    }
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const videoId = params.id;
+                console.log("video id: ", videoId)
+                const videoRes = await axios.get(`http://localhost:5000/videos/find/${videoId}`);
+                const channelRes = await axios.get(`http://localhost:5000/users/find/${videoRes.data.userId}`);
+                console.log("video: ", videoRes);
+                console.log("channel: ", channelRes);
+                setChannel(channelRes.data);
+                dispatch(fetchSuccess(videoRes.data));
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        fetchData();
+    }, []);
+
     return (
         <Container>
             <Content>
                 <VideoWrapper>
-                    <iframe
-                        width="100%"
-                        height="600"
-                        src="https://www.youtube.com/embed/k3Vfj-e1Ma4"
-                        title="YouTube video player"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen
-                    ></iframe>
+                    <VideoFrame src={currentVideo ? currentVideo.videoUrl : ""} controls />
                 </VideoWrapper>
-                <Title>Test Video</Title>
+                <Title>{currentVideo ? currentVideo.title : ""}</Title>
                 <Details>
-                    <Info>7,948,154 views . Jun 22, 2022</Info>
+                    <Info>{currentVideo ? currentVideo.views : ""} views . {format(currentVideo ? currentVideo.createdAt : "")}</Info>
                     <Buttons>
-                        <Button><ThumbUpOutlined />123</Button>
-                        <Button><ThumbDownOffAltOutlined /></Button>
+                        <Button onClick={handleLike}>{currentVideo ? (currentVideo.likes ? (currentVideo.likes.includes(currentUser._id) ? <ThumbUp /> : <ThumbUpOutlined />) : "") : ""}{currentVideo ? (currentVideo.likes ? currentVideo.likes.length : "0") : "0"}</Button>
+                        <Button onClick={handleDislike}>{currentVideo ? (currentVideo.dislikes ? (currentVideo.dislikes.includes(currentUser._id) ? <ThumbDown /> : <ThumbDownOffAltOutlined />) : "") : ""}</Button>
                         <Button><ReplyOutlined /></Button>
                         <Button><AddTaskOutlined /></Button>
                     </Buttons>
@@ -135,72 +179,19 @@ const Video = () => {
                 <Hr />
                 <Channel>
                     <ChannelInfo>
-                        <Image src="https://yt3.ggpht.com/ytc/AMLnZu80jIF6oehgpUILTaUbqSM5xYHWbPoc_Bz7wddxzg=s68-c-k-c0x00ffffff-no-rj" />
+                        <Image src={channel ? channel.image : ""} />
                         <ChannelDetail>
-                            <ChannelName>WarnerBros</ChannelName>
-                            <ChannelCounter>200K subscribers</ChannelCounter>
-                            <Description>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Natus, architecto a. Sed, iure, nobis nostrum quia ut, numquam ipsam consectetur asperiores omnis similique tempora corrupti quod quibusdam eos accusantium libero?</Description>
+                            <ChannelName>{channel ? channel.name : ""}</ChannelName>
+                            <ChannelCounter>{channel ? channel.subscribers : ""} subscribers</ChannelCounter>
+                            <Description>{currentVideo ? currentVideo.description : ""}</Description>
                         </ChannelDetail>
                     </ChannelInfo>
-                    <Subscribe>SUBSCRIBE</Subscribe>
+                    <Subscribe onClick={handleSubscribe}>{currentUser ? (currentUser.subscribedUsers ? (currentUser.subscribedUsers.includes(channel._id) ? "SUBSCRIBED" : "SUBSCRIBE") : "") : ""}</Subscribe>
                 </Channel>
                 <Hr />
-                <Comments />
+                <Comments videoId={currentVideo ? currentVideo._id : ""} />
             </Content>
-            <Recommendation>
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-                <Card type="sm" />
-            </Recommendation>
+            <Recommendation tags={currentVideo ? currentVideo.tags : ""} />
         </Container>
     )
 }

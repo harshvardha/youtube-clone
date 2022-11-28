@@ -1,4 +1,7 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { format } from "timeago.js";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -53,17 +56,28 @@ const Info = styled.div`
     color: ${({ theme }) => theme.textSoft};
 `;
 
-const Card = ({ type }) => {
+const Card = ({ type, video }) => {
+    const [channel, setChannel] = useState([]);
+
+    useEffect(() => {
+        const fetchVideos = async () => {
+            const res = await axios.get(`http://localhost:5000/users/find/${video.userId}`);
+            console.log(res);
+            setChannel(res.data);
+        }
+        fetchVideos();
+    }, [video.userId]);
+
     return (
-        <Link to={"/video/test"} style={{ textDecoration: "none" }}>
+        <Link to={`/video/${video._id}`} style={{ textDecoration: "none" }}>
             <Container type={type}>
-                <Image type={type} src="https://i.ytimg.com/vi/3ylp700FmaA/hq720.jpg?sqp=-oaymwEcCOgCEMoBSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAW2Of8gGaiwfElS45SYn3Wtg0uug" />
+                <Image type={type} src={video.thumbnailUrl} />
                 <Details type={type}>
-                    <ChannelImage type={type} src="https://yt3.ggpht.com/ytc/AMLnZu80jIF6oehgpUILTaUbqSM5xYHWbPoc_Bz7wddxzg=s68-c-k-c0x00ffffff-no-rj" />
+                    <ChannelImage type={type} src={channel.image} />
                     <Texts>
-                        <Title>Test Video</Title>
-                        <ChannelName>Harshvardhan Singh</ChannelName>
-                        <Info>660,908 views . 1 day ago</Info>
+                        <Title>{video.title}</Title>
+                        <ChannelName>{channel.name}</ChannelName>
+                        <Info>{video.views} views . {format(video.createdAt)}</Info>
                     </Texts>
                 </Details>
             </Container>

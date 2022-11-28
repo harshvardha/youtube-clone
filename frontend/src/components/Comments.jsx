@@ -1,3 +1,7 @@
+import { current } from "@reduxjs/toolkit";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import styled from "styled-components";
 import Comment from "./Comment";
 
@@ -27,50 +31,30 @@ const Input = styled.input`
     color: ${({ theme }) => theme.text};
 `;
 
-const Comments = () => {
+const Comments = ({ videoId }) => {
+    const [comments, setComments] = useState([]);
+    const { currentUser } = useSelector(state => state.user);
+
+    useEffect(() => {
+        const fetchComments = async () => {
+            try {
+                const res = await axios.get(`http://localhost:5000/comments/${videoId}`);
+                setComments(res.data);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    }, [videoId]);
+
     return (
         <Container>
             <NewComment>
-                <Avatar src="https://yt3.ggpht.com/ytc/AMLnZu80jIF6oehgpUILTaUbqSM5xYHWbPoc_Bz7wddxzg=s68-c-k-c0x00ffffff-no-rj" />
+                <Avatar src={currentUser.image} />
                 <Input placeholder="Add a comment..." />
             </NewComment>
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
-            <Comment />
+            {comments.map(comment => (
+                <Comment key={comment._id} comment={comment} />
+            ))}
         </Container>
     )
 }
