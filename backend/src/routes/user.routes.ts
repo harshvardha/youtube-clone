@@ -7,8 +7,8 @@ import {
     subscribeChannel,
     unsubscribeChannel,
     updateUser
-} from "../controllers/user.controllers.js";
-import verifyToken from "../middlewares/verifyAccessToken.middleware.js";
+} from "../controllers/user.controllers";
+import verifyToken from "../middlewares/verifyAccessToken.middleware";
 
 const userRouter = Router();
 

@@ -1,6 +1,6 @@
 import { StatusCodes } from "http-status-codes";
-import User from "../models/User.js";
-import Video from "../models/Video.js";
+import User from "../models/User.model.js";
+import Video from "../models/Video.model.js";
 import createError from "../error.js";
 
 const addVideo = async (req, res, next) => {
