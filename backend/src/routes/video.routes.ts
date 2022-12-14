@@ -1,5 +1,5 @@
 import { Router } from "express";
-import verifyToken from "../middlewares/verifyAccessToken.middleware.js";
+import verifyToken from "../middlewares/verifyAccessToken.middleware";
 import {
     addVideo,
     updateVideo,
@@ -11,7 +11,7 @@ import {
     getSubscribedChannelVideos,
     getVideoByTag,
     search,
-} from "../controllers/video.controllers.js";
+} from "../controllers/video.controllers";
 
 const videoRouter = Router();
 
