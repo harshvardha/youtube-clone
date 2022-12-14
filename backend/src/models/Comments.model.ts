@@ -11,7 +11,8 @@ const commentsSchema = new Schema({
     },
     description: {
         type: String,
-        required: true
+        required: true,
+        min: 1
     },
     likes: {
         type: Array,
@@ -30,7 +31,8 @@ const commentsSchema = new Schema({
             },
             description: {
                 type: String,
-                required: true
+                required: true,
+                min: 1
             },
             likes: {
                 type: Array,
