@@ -1,12 +1,13 @@
 import { StatusCodes } from "http-status-codes";
-import User from "../models/User.model.js";
-import Video from "../models/Video.model.js";
-import createError from "../error.js";
+import { Request, Response, NextFunction } from "express";
+import User from "../models/User.model";
+import Video from "../models/Video.model";
+import CustomError from "../errors/CustomError";
 
-const addVideo = async (req, res, next) => {
+const addVideo = async (req: Request | any, res: Response, next: NextFunction) => {
     try {
         const newVideo = await Video.create({
-            userId: req.user,
+            userId: req.user.id,
             ...req.body
         })
         res.status(StatusCodes.OK).json(newVideo);
@@ -16,19 +17,19 @@ const addVideo = async (req, res, next) => {
     }
 }
 
-const updateVideo = async (req, res, next) => {
+const updateVideo = async (req: Request | any, res: Response, next: NextFunction) => {
     try {
         const video = await Video.findById(req.params.id);
         if (!video) {
-            return next(createError(StatusCodes.NOT_FOUND, "Video not found."));
+            return next(new CustomError(StatusCodes.NOT_FOUND, "Video not found."));
         }
-        if (req.user === video.userId) {
+        if (req.user.id === video.userId) {
             const updatedUser = await Video.findByIdAndUpdate(req.params.id, {
                 $set: req.body,
             }, { new: true });
             res.status(StatusCodes.OK).json(updatedUser);
         } else {
-            next(createError(StatusCodes.BAD_REQUEST, "Invalid user id."));
+            next(new CustomError(StatusCodes.BAD_REQUEST, "Invalid user id."));
         }
     } catch (error) {
         console.log(error);
@@ -36,17 +37,17 @@ const updateVideo = async (req, res, next) => {
     }
 }
 
-const deleteVideo = async (req, res, next) => {
+const deleteVideo = async (req: Request | any, res: Response, next: NextFunction) => {
     try {
         const video = await Video.findById(req.params.id);
         if (!video) {
-            return next(createError(StatusCodes.NOT_FOUND, "Video not found!"));
+            return next(new CustomError(StatusCodes.NOT_FOUND, "Video not found!"));
         }
         if (req.user.id === video.userId) {
             await Video.findByIdAndDelete(req.params.id);
             res.status(StatusCodes.OK).json({ message: "The video has been deleted." });
         } else {
-            return next(createError(StatusCodes.FORBIDDEN, "You can delete only your video!"));
+            return next(new CustomError(StatusCodes.FORBIDDEN, "You can delete only your video!"));
         }
     } catch (error) {
         console.log(error);
@@ -54,7 +55,7 @@ const deleteVideo = async (req, res, next) => {
     }
 }
 
-const getVideo = async (req, res, next) => {
+const getVideo = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const video = await Video.findById(req.params.id);
         res.status(StatusCodes.OK).json(video);
@@ -64,7 +65,7 @@ const getVideo = async (req, res, next) => {
     }
 }
 
-const addView = async (req, res, next) => {
+const addView = async (req: Request, res: Response, next: NextFunction) => {
     try {
         await Video.findByIdAndUpdate(req.params.id, {
             $inc: { views: 1 }
@@ -76,7 +77,7 @@ const addView = async (req, res, next) => {
     }
 }
 
-const getRandomVideos = async (req, res, next) => {
+const getRandomVideos = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const randomVideos = await Video.aggregate([{ $sample: { size: 40 } }]);
         res.status(StatusCodes.OK).json(randomVideos);
@@ -86,7 +87,7 @@ const getRandomVideos = async (req, res, next) => {
     }
 }
 
-const getTrendingVideos = async (req, res, next) => {
+const getTrendingVideos = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const trendingVideos = await Video.find().sort({ views: -1 });
         res.status(StatusCodes.OK).json(trendingVideos);
@@ -96,12 +97,12 @@ const getTrendingVideos = async (req, res, next) => {
     }
 }
 
-const getSubscribedChannelVideos = async (req, res, next) => {
+const getSubscribedChannelVideos = async (req: Request | any, res: Response, next: NextFunction) => {
     try {
-        const user = await User.findById(req.user);
-        const subscribedChannels = user.subscribedUsers;
+        const user = await User.findById(req.user.id);
+        const subscribedChannels: any = user?.subscribedUsers;
         const list = await Promise.all(
-            subscribedChannels.map((channelId) => {
+            subscribedChannels.map((channelId: string) => {
                 return Video.find({ userId: channelId });
             })
         );
@@ -112,7 +113,7 @@ const getSubscribedChannelVideos = async (req, res, next) => {
     }
 }
 
-const getVideoByTag = async (req, res, next) => {
+const getVideoByTag = async (req: Request | any, res: Response, next: NextFunction) => {
     try {
         const tags = req.query.tags.split(",");
         console.log(tags);
@@ -124,7 +125,7 @@ const getVideoByTag = async (req, res, next) => {
     }
 }
 
-const search = async (req, res, next) => {
+const search = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const query = req.query.q;
         console.log("search: ", query);
